@@ -34,6 +34,9 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public Order getOrderById(@PathVariable Long id) {
-        return service.getOrderById(id);
+        return service.getOrders().stream()
+                .filter(o -> o.getOrderId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 }

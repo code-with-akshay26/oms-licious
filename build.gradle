@@ -34,5 +34,5 @@ tasks.named('test') {
 }
 
 springBoot {
-    mainClass = 'com.example.demo.OmsApplication'
+    mainClass = 'com.example.demo.DemoApplication'
 }
