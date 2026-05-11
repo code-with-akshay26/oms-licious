@@ -1,38 +1,39 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Order;
-import com.example.demo.model.OrderItem;
 import com.example.demo.service.OrderService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/warehouse/orders")
+@RequestMapping("/orders")
 public class OrderController {
+
     private final OrderService service;
 
-    public OrderController(OrderService service) { this.service = service; }
-
-    @PostMapping("/create")
-    public ResponseEntity<Order> create(@RequestBody List<OrderItem> items) {
-        return ResponseEntity.ok(service.createOrder(items));
+    public OrderController(OrderService service) {
+        this.service = service;
     }
 
-    @PatchMapping("/{orderId}/status")
-    public ResponseEntity<Order> update(@PathVariable String orderId, @RequestParam String status) {
-        return ResponseEntity.ok(service.updateStatus(orderId, status));
+    @PostMapping
+    public Order createOrder(@RequestBody Order order) {
+        return service.createOrder(order);
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<Order> get(@PathVariable String orderId) {
-        return ResponseEntity.ok(service.getOrderById(orderId));
+    @PutMapping("/{id}")
+    public Order updateStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        return service.updateStatus(id, request.get("status"));
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<Collection<Order>> getAll() {
-        return ResponseEntity.ok(service.getAllOrders());
+    @GetMapping
+    public List<Order> getOrders() {
+        return service.getOrders();
+    }
+
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return service.getOrderById(id);
     }
 }

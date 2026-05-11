@@ -2,41 +2,43 @@ package com.example.demo.service;
 
 import com.example.demo.CustomException.OrderNotFoundException;
 import com.example.demo.model.Order;
-import com.example.demo.model.OrderItem;
+import com.example.demo.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class OrderService {
-    private final Map<String, Order> orderMap = new ConcurrentHashMap<>();
 
-    public Order createOrder(List<OrderItem> items) {
-        String id = "ORD-" + System.currentTimeMillis();
-        Order newOrder = new Order(id, items, "PLACED", System.currentTimeMillis());
-        orderMap.put(id, newOrder);
-        return newOrder;
+    private final OrderRepository repository;
+
+    public OrderService(OrderRepository repository) {
+        this.repository = repository;
     }
 
-    public Order updateStatus(String orderId, String newStatus) {
-        Order existing = orderMap.get(orderId);
-        if (existing == null) throw new OrderNotFoundException("Order " + orderId + " not found");
-
-        Order updated = new Order(existing.orderId(), existing.items(), newStatus.toUpperCase(), existing.createdAt());
-        orderMap.put(orderId, updated);
-        return updated;
+    public Order createOrder(Order order) {
+        order.setOrderId(null);
+        order.setStatus("CREATED");
+        if (order.getItems() != null) {
+            order.getItems().forEach(item -> item.setOrder(order));
+        }
+        return repository.save(order);
     }
 
-    public Order getOrderById(String orderId) {
-        Order order = orderMap.get(orderId);
-        if (order == null) throw new OrderNotFoundException("Order " + orderId + " not found");
-        return order;
+    public Order updateStatus(Long id, String status) {
+        Order order = repository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Order with id " + id + " not found"));
+
+        order.setStatus(status);
+        return repository.save(order);
     }
 
-    public Collection<Order> getAllOrders() {
-        return orderMap.values();
+    public List<Order> getOrders() {
+        return repository.findAll();
+    }
+
+    public Order getOrderById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Order with id " + id + " not found"));
     }
 }
